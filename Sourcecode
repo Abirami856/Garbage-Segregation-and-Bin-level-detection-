@@ -1,1 +1,82 @@
+#include <Servo.h>
 
+// Ultrasonic Sensor Pins
+#define TRIG_PIN 9
+#define ECHO_PIN 10
+
+// Flame Sensor Pin
+#define FLAME_PIN 7
+
+// Servo Motor Pin
+#define SERVO_PIN 6
+
+Servo myServo;
+
+long duration;
+int distance;
+int flameState;
+
+void setup() {
+  Serial.begin(9600);
+
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
+  pinMode(FLAME_PIN, INPUT);
+
+  myServo.attach(SERVO_PIN);
+
+  // Initial Servo Position
+  myServo.write(90);
+
+  Serial.println("Garbage Segregation and Bin Level Detection");
+}
+
+void loop() {
+
+  // ---------- Ultrasonic Sensor ----------
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+
+  duration = pulseIn(ECHO_PIN, HIGH);
+
+  distance = duration * 0.034 / 2;
+
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  // Bin Level Detection
+  if (distance < 10) {
+    Serial.println("Bin is FULL");
+  } else {
+    Serial.println("Bin has space");
+  }
+
+  // ---------- Servo Motor ----------
+  // Servo rotates automatically
+  myServo.write(0);
+  delay(2000);
+
+  myServo.write(180);
+  delay(2000);
+
+  myServo.write(90);
+
+  // ---------- Flame Sensor ----------
+  flameState = digitalRead(FLAME_PIN);
+
+  if (flameState == LOW) {
+    Serial.println("Fire Detected!");
+  } else {
+    Serial.println("No Fire");
+  }
+
+  Serial.println("------------------------");
+
+  delay(1000);
+}
